@@ -1,10 +1,10 @@
-// Test unitario del LibroListComponent
-// Verifica que el componente se crea y funciona correctamente
-// Usamos spies (dobles de prueba) para no hacer llamadas HTTP reales
+// Test unitario del LibroListComponent — API Vitest (Angular 22)
+// Usa spies para no hacer llamadas HTTP reales al backend
 
 import { TestBed } from '@angular/core/testing';
 import { provideRouter } from '@angular/router';
 import { of } from 'rxjs';
+import { expect, describe, it, beforeEach, vi } from 'vitest';
 
 import { LibroListComponent } from './libro-list.component';
 import { LibroService } from '../../services/libro.service';
@@ -22,28 +22,27 @@ describe('LibroListComponent', () => {
     { id: 1, nombre: 'Gabriel García Márquez', nacionalidad: 'Colombiano' }
   ];
 
-  // "Spies": versiones falsas de los servicios que devuelven datos fijos
-  // Así el test no depende del backend real
-  let libroServiceSpy: jasmine.SpyObj<LibroService>;
-  let autorServiceSpy: jasmine.SpyObj<AutorService>;
+  // Servicios falsos: en lugar de hacer HTTP real, devuelven datos fijos con of()
+  const libroServiceFalso = {
+    getLibros: vi.fn().mockReturnValue(of(librosFalsos)),
+    eliminarLibro: vi.fn().mockReturnValue(of({}))
+  };
+  const autorServiceFalso = {
+    getAutores: vi.fn().mockReturnValue(of(autoresFalsos))
+  };
 
   beforeEach(async () => {
-    // Creamos los spies con los métodos que usa el componente
-    libroServiceSpy = jasmine.createSpyObj('LibroService', ['getLibros', 'eliminarLibro']);
-    autorServiceSpy = jasmine.createSpyObj('AutorService', ['getAutores']);
-
-    // Configuramos qué devuelven cuando se los llama
-    // of() crea un Observable que emite el valor inmediatamente (como si fuera HTTP exitoso)
-    libroServiceSpy.getLibros.and.returnValue(of(librosFalsos));
-    autorServiceSpy.getAutores.and.returnValue(of(autoresFalsos));
+    // Reiniciamos los contadores de llamada antes de cada test
+    libroServiceFalso.getLibros.mockClear();
+    autorServiceFalso.getAutores.mockClear();
 
     await TestBed.configureTestingModule({
       imports: [LibroListComponent],
       providers: [
-        // Proveemos los spies en lugar de los servicios reales
-        { provide: LibroService, useValue: libroServiceSpy },
-        { provide: AutorService, useValue: autorServiceSpy },
-        // Para que RouterLink y routerNavigate funcionen en los tests
+        // Proveemos los servicios falsos en lugar de los reales
+        { provide: LibroService, useValue: libroServiceFalso },
+        { provide: AutorService, useValue: autorServiceFalso },
+        // Necesario para que RouterLink funcione en el componente
         provideRouter([])
       ]
     }).compileComponents();
@@ -64,8 +63,8 @@ describe('LibroListComponent', () => {
     const componente = fixture.componentInstance;
 
     // Verificamos que los servicios fueron llamados
-    expect(libroServiceSpy.getLibros).toHaveBeenCalled();
-    expect(autorServiceSpy.getAutores).toHaveBeenCalled();
+    expect(libroServiceFalso.getLibros).toHaveBeenCalled();
+    expect(autorServiceFalso.getAutores).toHaveBeenCalled();
 
     // Verificamos que los datos se guardaron en el componente
     expect(componente.libros.length).toBe(1);
@@ -91,7 +90,7 @@ describe('LibroListComponent', () => {
     expect(componente.filtroBusqueda).toBe('');
     expect(componente.filtroAutorId).toBeUndefined();
 
-    // Verificamos que se volvió a llamar a getLibros (2 veces: ngOnInit + limpiarFiltros)
-    expect(libroServiceSpy.getLibros).toHaveBeenCalledTimes(2);
+    // ngOnInit + limpiarFiltros = 2 llamadas a getLibros
+    expect(libroServiceFalso.getLibros).toHaveBeenCalledTimes(2);
   });
 });
