@@ -1,0 +1,157 @@
+<div class="container">
+
+  <!-- Botón de regreso -->
+  <div class="mb-4">
+    <a routerLink="/libros" class="btn btn-secondary btn-sm">
+      ← Volver al Catálogo
+    </a>
+  </div>
+
+  <div class="form-wrapper">
+
+    <!-- Encabezado del Formulario -->
+    <div class="form-header">
+      <h2>{{ esModoEdicion ? '✏️ Editar Libro' : '➕ Registrar Nuevo Libro' }}</h2>
+      <p class="subtitle">
+        {{ esModoEdicion 
+            ? 'Modificá los datos del libro seleccionado.' 
+            : 'Completá los campos para sumar un nuevo libro al catálogo.' }}
+      </p>
+    </div>
+
+    <!-- Alertas de carga, éxito o error -->
+    <div *ngIf="cargando" class="alert alert-info">
+      ⏳ Cargando datos del libro...
+    </div>
+
+    <div *ngIf="mensajeExito" class="alert alert-success">
+      ✅ {{ mensajeExito }}
+    </div>
+
+    <div *ngIf="error" class="alert alert-danger">
+      ❌ {{ error }}
+    </div>
+
+    <!-- Formulario Reactivo -->
+    <form *ngIf="!cargando" [formGroup]="libroForm" (ngSubmit)="guardar()" class="form-body">
+
+      <!-- CAMPO 1: Título -->
+      <div class="form-group mb-3">
+        <label for="titulo">Título del libro: <span class="required">*</span></label>
+        <input 
+          type="text" 
+          id="titulo" 
+          formControlName="titulo" 
+          class="form-control"
+          [class.is-invalid]="campoInvalido('titulo')"
+          placeholder="Ej: Cien años de soledad"
+        />
+        <!-- Mensajes de validación de Título -->
+        <div *ngIf="campoInvalido('titulo')" class="error-feedback">
+          <small *ngIf="libroForm.get('titulo')?.errors?.['required']">
+            El título es obligatorio.
+          </small>
+          <small *ngIf="libroForm.get('titulo')?.errors?.['minlength']">
+            El título debe tener al menos 2 caracteres.
+          </small>
+        </div>
+      </div>
+
+      <!-- FILA: Género y Año -->
+      <div class="form-row mb-3">
+        <!-- CAMPO 2: Género -->
+        <div class="form-group flex-1">
+          <label for="genero">Género literario: <span class="required">*</span></label>
+          <input 
+            type="text" 
+            id="genero" 
+            formControlName="genero" 
+            class="form-control"
+            [class.is-invalid]="campoInvalido('genero')"
+            placeholder="Ej: Novela, Cuentos, Fantasía..."
+          />
+          <div *ngIf="campoInvalido('genero')" class="error-feedback">
+            <small *ngIf="libroForm.get('genero')?.errors?.['required']">
+              El género es obligatorio.
+            </small>
+          </div>
+        </div>
+
+        <!-- CAMPO 3: Año de Publicación -->
+        <div class="form-group flex-1">
+          <label for="anio_publicacion">Año de publicación: <span class="required">*</span></label>
+          <input 
+            type="number" 
+            id="anio_publicacion" 
+            formControlName="anio_publicacion" 
+            class="form-control"
+            [class.is-invalid]="campoInvalido('anio_publicacion')"
+            placeholder="Ej: 1967"
+          />
+          <div *ngIf="campoInvalido('anio_publicacion')" class="error-feedback">
+            <small *ngIf="libroForm.get('anio_publicacion')?.errors?.['required']">
+              El año es obligatorio.
+            </small>
+            <small *ngIf="libroForm.get('anio_publicacion')?.errors?.['min']">
+              El año debe ser mayor a 1000.
+            </small>
+            <small *ngIf="libroForm.get('anio_publicacion')?.errors?.['max']">
+              El año no puede ser en el futuro.
+            </small>
+          </div>
+        </div>
+      </div>
+
+      <!-- CAMPO 4: Autor (Select dinámico cargado desde Flask) -->
+      <div class="form-group mb-3">
+        <label for="autor_id">Autor: <span class="required">*</span></label>
+        <select 
+          id="autor_id" 
+          formControlName="autor_id" 
+          class="form-control"
+          [class.is-invalid]="campoInvalido('autor_id')"
+        >
+          <option [ngValue]="null" disabled>-- Seleccioná un autor de la lista --</option>
+          <option *ngFor="let autor of autores" [ngValue]="autor.id">
+            {{ autor.nombre }} ({{ autor.nacionalidad }})
+          </option>
+        </select>
+        <div *ngIf="campoInvalido('autor_id')" class="error-feedback">
+          <small *ngIf="libroForm.get('autor_id')?.errors?.['required']">
+            Debes seleccionar un autor para el libro.
+          </small>
+        </div>
+        <small class="help-text">
+          ¿No encontrás al autor? Podés crearlo primero en la sección <a routerLink="/autores">Autores</a>.
+        </small>
+      </div>
+
+      <!-- CAMPO 5: Disponibilidad (Checkbox) -->
+      <div class="form-group checkbox-group mb-4">
+        <label class="checkbox-label">
+          <input 
+            type="checkbox" 
+            formControlName="disponible"
+            class="checkbox-input"
+          />
+          <span>¿Está disponible para préstamo inmediato?</span>
+        </label>
+      </div>
+
+      <!-- Botones de Acción -->
+      <div class="form-actions">
+        <a routerLink="/libros" class="btn btn-secondary">
+          Cancelar
+        </a>
+        <button type="submit" [disabled]="guardando" class="btn btn-primary">
+          {{ guardando 
+              ? 'Guardando...' 
+              : (esModoEdicion ? '💾 Actualizar Libro' : '💾 Guardar Libro') }}
+        </button>
+      </div>
+
+    </form>
+
+  </div>
+
+</div>
