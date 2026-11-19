@@ -1,0 +1,96 @@
+<!-- Botón flotante para abrir/cerrar el chat -->
+<button 
+  class="chat-floating-btn" 
+  (click)="toggleChat()" 
+  [attr.aria-label]="abierto ? 'Cerrar asistente virtual' : 'Abrir asistente virtual'"
+  title="Asistente Virtual con IA"
+>
+  <span *ngIf="!abierto" class="chat-btn-icon">💬</span>
+  <span *ngIf="abierto" class="chat-btn-icon">✖</span>
+  <span *ngIf="!abierto" class="chat-btn-badge">IA</span>
+</button>
+
+<!-- Ventana flotante del Chatbot -->
+<div *ngIf="abierto" class="chat-window">
+  
+  <!-- Encabezado del chat -->
+  <div class="chat-header">
+    <div class="chat-header-info">
+      <span class="chat-avatar">🤖</span>
+      <div>
+        <h4>Asistente Virtual</h4>
+        <span class="chat-status"><span class="status-dot"></span> Gemini AI (Catálogo en vivo)</span>
+      </div>
+    </div>
+    <button class="chat-close-btn" (click)="toggleChat()" title="Minimizar">✕</button>
+  </div>
+
+  <!-- Contenedor con el historial de mensajes -->
+  <div class="chat-messages" #mensajesContainer>
+    
+    <div 
+      *ngFor="let m of mensajes" 
+      class="chat-message-row"
+      [ngClass]="m.remitente === 'usuario' ? 'row-user' : 'row-bot'"
+    >
+      <div 
+        class="chat-bubble"
+        [ngClass]="{
+          'bubble-user': m.remitente === 'usuario',
+          'bubble-bot': m.remitente === 'bot',
+          'bubble-error': m.esError
+        }"
+      >
+        <p class="bubble-text">{{ m.texto }}</p>
+        <span class="bubble-time">{{ m.hora }}</span>
+      </div>
+    </div>
+
+    <!-- Indicador de "Escribiendo..." mientras Gemini responde -->
+    <div *ngIf="cargando" class="chat-message-row row-bot">
+      <div class="chat-bubble bubble-bot bubble-typing">
+        <span class="dot"></span>
+        <span class="dot"></span>
+        <span class="dot"></span>
+        <span class="typing-text">Consultando catálogo...</span>
+      </div>
+    </div>
+
+  </div>
+
+  <!-- Sugerencias de preguntas rápidas (solo visibles si hay pocos mensajes) -->
+  <div *ngIf="mensajes.length <= 2 && !cargando" class="chat-suggestions">
+    <small class="suggestions-title">💡 Preguntas rápidas:</small>
+    <div class="suggestions-list">
+      <button 
+        *ngFor="let s of sugerencias" 
+        (click)="usarSugerencia(s)" 
+        class="suggestion-chip"
+      >
+        {{ s }}
+      </button>
+    </div>
+  </div>
+
+  <!-- Barra de entrada de texto -->
+  <form (ngSubmit)="enviar()" class="chat-input-bar">
+    <input 
+      type="text" 
+      [(ngModel)]="mensajeInput" 
+      name="mensajeInput" 
+      placeholder="Preguntale algo a la biblioteca..."
+      class="chat-input"
+      [disabled]="cargando"
+      autocomplete="off"
+    />
+    <button 
+      type="submit" 
+      class="chat-send-btn" 
+      [disabled]="cargando || !mensajeInput.trim()"
+      title="Enviar mensaje"
+    >
+      ➤
+    </button>
+  </form>
+
+</div>

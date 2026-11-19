@@ -1,6 +1,12 @@
+import os
 from flask import Flask, request, jsonify
 from flask_cors import CORS
+from dotenv import load_dotenv
+from google import genai
 from database import get_db_connection, init_db
+
+# Cargamos variables de entorno desde el archivo .env
+load_dotenv()
 
 # ==============================================================================
 # CONFIGURACIÓN INICIAL DE FLASK Y CORS
@@ -506,6 +512,122 @@ def eliminar_libro(libro_id):
     return jsonify({
         "mensaje": f"El libro '{libro['titulo']}' fue eliminado correctamente"
     }), 200
+
+
+# ==============================================================================
+# CHATBOT CON IA — RUTA POST /chat (GEMINI)
+# ==============================================================================
+
+@app.route("/chat", methods=["POST"])
+def chat():
+    """
+    Recibe una consulta del usuario, lee en tiempo real el catálogo de la biblioteca
+    desde SQLite y consulta a Gemini para que responda de forma personalizada,
+    breve y amable basándose únicamente en nuestros datos reales.
+    """
+    datos = request.get_json()
+
+    if not datos or not datos.get("mensaje") or not isinstance(datos["mensaje"], str) or not datos["mensaje"].strip():
+        return jsonify({"error": "Debe enviar un campo 'mensaje' con texto válido"}), 400
+
+    mensaje_usuario = datos["mensaje"].strip()
+
+    # 1. Leemos la clave de API desde el entorno
+    api_key = os.getenv("GEMINI_API_KEY", "").strip().strip('"').strip("'")
+    if not api_key:
+        return jsonify({
+            "error": "El chatbot no está configurado en el servidor. Falta definir GEMINI_API_KEY en el archivo .env"
+        }), 500
+
+    os.environ["GEMINI_API_KEY"] = api_key
+
+    # 2. Consultamos SQLite para obtener la información real y actualizada
+    conn = get_db_connection()
+    cursor = conn.cursor()
+
+    # Traemos todos los autores
+    cursor.execute("SELECT id, nombre, nacionalidad FROM autores ORDER BY nombre ASC;")
+    autores = cursor.fetchall()
+
+    # Traemos todos los libros con el nombre de su autor (JOIN)
+    cursor.execute("""
+        SELECT libros.titulo, libros.genero, libros.anio_publicacion,
+               libros.disponible, autores.nombre AS autor_nombre
+        FROM libros
+        INNER JOIN autores ON libros.autor_id = autores.id
+        ORDER BY autores.nombre ASC, libros.titulo ASC;
+    """)
+    libros = cursor.fetchall()
+    conn.close()
+
+    # 3. Construimos el contexto de datos en texto para Gemini
+    lineas_autores = []
+    for a in autores:
+        lineas_autores.append(f"- {a['nombre']} ({a['nacionalidad']})")
+    texto_autores = "\n".join(lineas_autores) if lineas_autores else "No hay autores registrados actualmente."
+
+    lineas_libros = []
+    for l in libros:
+        estado = "Disponible para préstamo" if l["disponible"] else "Actualmente prestado (no disponible)"
+        lineas_libros.append(
+            f"- '{l['titulo']}' escrito por {l['autor_nombre']} | Género: {l['genero']} | Año: {l['anio_publicacion']} | Estado: {estado}"
+        )
+    texto_libros = "\n".join(lineas_libros) if lineas_libros else "No hay libros registrados actualmente."
+
+    # 4. Prompt del sistema
+    prompt_completo = f"""Eres el Asistente Virtual oficial de la Biblioteca Digital.
+Tu objetivo es responder las consultas de los lectores de forma muy amable, concisa y cordial (máximo 3 oraciones en español).
+
+IMPORTANTE: Debes responder EXCLUSIVAMENTE basándote en la información de nuestro catálogo actual detallado abajo.
+Si el usuario pregunta por un libro o autor que NO está en la lista, infórmale cortésmente que actualmente no lo tenemos en el catálogo.
+Si el usuario pregunta cosas que no tienen nada que ver con la biblioteca o literatura, indícale amablemente que solo estás capacitado para responder dudas sobre los libros y autores de esta biblioteca.
+
+=== CATÁLOGO ACTUAL DE LA BIBLIOTECA ===
+
+[AUTORES REGISTRADOS]
+{texto_autores}
+
+[LIBROS Y SU DISPONIBILIDAD]
+{texto_libros}
+
+=== CONSULTA DEL USUARIO ===
+{mensaje_usuario}
+"""
+
+    # 5. Llamamos a Gemini usando el SDK oficial google-genai
+    try:
+        cliente_gemini = genai.Client(api_key=api_key)
+
+        # Probamos gemini-2.5-flash primero; si la versión de API del usuario no lo tiene, probamos 2.0 o 1.5
+        modelos = ["gemini-2.5-flash", "gemini-2.0-flash", "gemini-1.5-flash"]
+        respuesta_texto = None
+        ultimo_error = None
+
+        for nombre_modelo in modelos:
+            try:
+                resp = cliente_gemini.models.generate_content(
+                    model=nombre_modelo,
+                    contents=prompt_completo
+                )
+                if resp and resp.text:
+                    respuesta_texto = resp.text.strip()
+                    break
+            except Exception as err:
+                ultimo_error = err
+                continue
+
+        if not respuesta_texto:
+            raise ultimo_error if ultimo_error else Exception("No se obtuvo texto de respuesta de Gemini")
+
+        return jsonify({
+            "respuesta": respuesta_texto
+        }), 200
+
+    except Exception as error_ia:
+        print(f">> Error al llamar a la API de Gemini: {error_ia}")
+        return jsonify({
+            "error": f"No se pudo obtener respuesta de la Inteligencia Artificial. Detalle: {str(error_ia)}"
+        }), 500
 
 
 # ==============================================================================
