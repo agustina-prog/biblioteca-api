@@ -1,0 +1,72 @@
+<div class="container">
+  
+  <div class="mb-4">
+    <a routerLink="/libros" class="btn btn-secondary btn-sm">
+      ← Volver al Catálogo
+    </a>
+  </div>
+
+  <!-- Estado de carga -->
+  <div *ngIf="cargando" class="alert alert-info">
+    ⏳ Cargando información del libro...
+  </div>
+
+  <!-- Error -->
+  <div *ngIf="error" class="alert alert-danger">
+    ❌ {{ error }}
+  </div>
+
+  <!-- Ficha de Detalle del Libro -->
+  <div *ngIf="!cargando && libro" class="detail-card">
+    <div class="detail-header">
+      <div>
+        <span class="badge badge-info">{{ libro.genero }}</span>
+        <span 
+          class="badge" 
+          [ngClass]="libro.disponible ? 'badge-success' : 'badge-warning'"
+          style="margin-left: 0.5rem;"
+        >
+          {{ libro.disponible ? 'Disponible para préstamo' : 'Actualmente prestado' }}
+        </span>
+        <h1 class="detail-title">{{ libro.titulo }}</h1>
+      </div>
+    </div>
+
+    <div class="detail-body">
+      <div class="info-row">
+        <span class="info-label">✍️ Autor:</span>
+        <span class="info-value highlight">{{ libro.autor_nombre }}</span>
+      </div>
+
+      <div class="info-row">
+        <span class="info-label">📅 Año de publicación:</span>
+        <span class="info-value">{{ libro.anio_publicacion }}</span>
+      </div>
+
+      <div class="info-row">
+        <span class="info-label">🏷️ Género literario:</span>
+        <span class="info-value">{{ libro.genero }}</span>
+      </div>
+
+      <div class="info-row">
+        <span class="info-label">🆔 ID de registro:</span>
+        <span class="info-value">#{{ libro.id }}</span>
+      </div>
+
+      <div class="info-row">
+        <span class="info-label">👤 ID del Autor (FK):</span>
+        <span class="info-value">#{{ libro.autor_id }}</span>
+      </div>
+    </div>
+
+    <div class="detail-footer">
+      <a [routerLink]="['/libros/editar', libro.id]" class="btn btn-primary">
+        ✏️ Editar Información
+      </a>
+      <button (click)="eliminarLibro()" class="btn btn-danger">
+        🗑️ Eliminar Libro
+      </button>
+    </div>
+  </div>
+
+</div>

@@ -1,0 +1,104 @@
+<div class="container">
+
+  <div class="page-header">
+    <div>
+      <h1>Gestión de Autores</h1>
+      <p class="subtitle">Entidad principal de la biblioteca (Relación 1 a N)</p>
+    </div>
+  </div>
+
+  <!-- Alerta de éxito -->
+  <div *ngIf="mensajeExito" class="alert alert-success">
+    ✅ {{ mensajeExito }}
+  </div>
+
+  <!-- Alerta de error (incluye la regla de negocio del código 400 si tiene libros) -->
+  <div *ngIf="error" class="alert alert-danger">
+    ⚠️ {{ error }}
+  </div>
+
+  <div class="authors-layout">
+    
+    <!-- Formulario para agregar un Autor -->
+    <div class="card form-card">
+      <h3>➕ Registrar Nuevo Autor</h3>
+      <p class="form-desc">Agregá un autor a la base de datos para poder asociarle libros.</p>
+      
+      <form (ngSubmit)="crearAutor()">
+        <div class="form-group mb-3">
+          <label for="autorNombre">Nombre completo:</label>
+          <input 
+            type="text" 
+            id="autorNombre" 
+            name="autorNombre"
+            [(ngModel)]="nuevoAutor.nombre"
+            placeholder="Ej: Isabel Allende" 
+            class="form-control"
+            required
+          />
+        </div>
+
+        <div class="form-group mb-3">
+          <label for="autorNac">Nacionalidad:</label>
+          <input 
+            type="text" 
+            id="autorNac" 
+            name="autorNac"
+            [(ngModel)]="nuevoAutor.nacionalidad"
+            placeholder="Ej: Chilena" 
+            class="form-control"
+            required
+          />
+        </div>
+
+        <button type="submit" [disabled]="guardando" class="btn btn-primary w-100">
+          {{ guardando ? 'Guardando...' : 'Guardar Autor' }}
+        </button>
+      </form>
+    </div>
+
+    <!-- Lista de Autores -->
+    <div class="card list-card">
+      <h3>📋 Autores Registrados ({{ autores.length }})</h3>
+
+      <div *ngIf="cargando" class="loading-text">
+        ⏳ Cargando lista de autores...
+      </div>
+
+      <div *ngIf="!cargando && autores.length > 0" class="table-responsive">
+        <table class="authors-table">
+          <thead>
+            <tr>
+              <th>ID</th>
+              <th>Nombre</th>
+              <th>Nacionalidad</th>
+              <th style="text-align: right;">Acciones</th>
+            </tr>
+          </thead>
+          <tbody>
+            <tr *ngFor="let autor of autores">
+              <td><span class="badge badge-info">#{{ autor.id }}</span></td>
+              <td class="font-bold">{{ autor.nombre }}</td>
+              <td>🌎 {{ autor.nacionalidad }}</td>
+              <td style="text-align: right;">
+                <button 
+                  (click)="eliminarAutor(autor.id!, autor.nombre)" 
+                  class="btn btn-danger btn-sm"
+                  title="Eliminar autor"
+                >
+                  🗑️ Eliminar
+                </button>
+              </td>
+            </tr>
+          </tbody>
+        </table>
+      </div>
+
+      <div *ngIf="!cargando && autores.length === 0" class="empty-state-sm">
+        No hay autores registrados todavía.
+      </div>
+    </div>
+
+  </div>
+
+</div>

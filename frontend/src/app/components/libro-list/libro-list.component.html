@@ -1,0 +1,116 @@
+<div class="container">
+  
+  <!-- Encabezado de la página -->
+  <div class="page-header">
+    <div>
+      <h1>Catálogo de Libros</h1>
+      <p class="subtitle">Explorá los títulos disponibles en nuestra biblioteca</p>
+    </div>
+    <a routerLink="/libros/nuevo" class="btn btn-primary">
+      ➕ Nuevo Libro
+    </a>
+  </div>
+
+  <!-- Barra de Filtros y Búsqueda -->
+  <div class="filter-card">
+    <form (ngSubmit)="aplicarFiltros()" class="filter-form">
+      <!-- Input de búsqueda por texto -->
+      <div class="form-group flex-grow">
+        <label for="busqueda">Buscar por título o género:</label>
+        <input 
+          type="text" 
+          id="busqueda" 
+          name="busqueda"
+          [(ngModel)]="filtroBusqueda" 
+          placeholder="Ej: Principito, Novela, Harry..."
+          class="form-control"
+        />
+      </div>
+
+      <!-- Select de filtro por Autor -->
+      <div class="form-group">
+        <label for="autor">Filtrar por autor:</label>
+        <select 
+          id="autor" 
+          name="autor"
+          [(ngModel)]="filtroAutorId" 
+          class="form-control"
+        >
+          <option [ngValue]="undefined">Todos los autores</option>
+          <option *ngFor="let autor of autores" [value]="autor.id">
+            {{ autor.nombre }}
+          </option>
+        </select>
+      </div>
+
+      <!-- Botones de acción del filtro -->
+      <div class="filter-actions">
+        <button type="submit" class="btn btn-primary">
+          🔍 Filtrar
+        </button>
+        <button type="button" (click)="limpiarFiltros()" class="btn btn-secondary">
+          Limpiar
+        </button>
+      </div>
+    </form>
+  </div>
+
+  <!-- Alerta de mensaje de éxito -->
+  <div *ngIf="mensajeExito" class="alert alert-success">
+    ✅ {{ mensajeExito }}
+  </div>
+
+  <!-- Alerta de error -->
+  <div *ngIf="error" class="alert alert-danger">
+    ❌ {{ error }}
+  </div>
+
+  <!-- Estado de carga -->
+  <div *ngIf="cargando" class="alert alert-info loading-box">
+    ⏳ Cargando catálogo de libros desde la base de datos...
+  </div>
+
+  <!-- Grid de tarjetas de Libros -->
+  <div *ngIf="!cargando && libros.length > 0" class="books-grid">
+    <div *ngFor="let libro of libros" class="book-card">
+      <div class="card-header">
+        <span class="badge badge-info">{{ libro.genero }}</span>
+        <span 
+          class="badge" 
+          [ngClass]="libro.disponible ? 'badge-success' : 'badge-warning'"
+        >
+          {{ libro.disponible ? 'Disponible' : 'Prestado' }}
+        </span>
+      </div>
+
+      <div class="card-body">
+        <h3 class="book-title">{{ libro.titulo }}</h3>
+        <p class="book-author">✍️ {{ libro.autor_nombre }}</p>
+        <p class="book-year">📅 Año: {{ libro.anio_publicacion }}</p>
+      </div>
+
+      <div class="card-footer">
+        <a [routerLink]="['/libros', libro.id]" class="btn btn-secondary btn-sm">
+          👁️ Ver Detalle
+        </a>
+        <a [routerLink]="['/libros/editar', libro.id]" class="btn btn-primary btn-sm">
+          ✏️ Editar
+        </a>
+        <button (click)="eliminarLibro(libro.id!, libro.titulo)" class="btn btn-danger btn-sm">
+          🗑️
+        </button>
+      </div>
+    </div>
+  </div>
+
+  <!-- Estado vacío (cuando no hay libros) -->
+  <div *ngIf="!cargando && libros.length === 0 && !error" class="empty-state">
+    <p class="empty-icon">📖</p>
+    <h3>No se encontraron libros</h3>
+    <p>Probá cambiando los términos de búsqueda o el autor seleccionado.</p>
+    <button (click)="limpiarFiltros()" class="btn btn-secondary" style="margin-top: 1rem;">
+      Ver todos los libros
+    </button>
+  </div>
+
+</div>
