@@ -1,0 +1,85 @@
+### ==============================================================================
+### GUÍA DE PRUEBAS DE LA API - BIBLIOTECA
+### (Requiere la extensión "REST Client" en VS Code)
+### ==============================================================================
+
+### 1. PROBAR CÓDIGO 200 OK: Listar todos los autores
+GET http://127.0.0.1:5000/autores
+
+### ------------------------------------------------------------------------------
+### 2. PROBAR CÓDIGO 200 OK: Listar todos los libros (incluye autor_nombre con JOIN)
+GET http://127.0.0.1:5000/libros
+
+### ------------------------------------------------------------------------------
+### 3. PROBAR CÓDIGO 200 OK: Filtrar libros por autor (ej: autor_id = 2 - Borges)
+GET http://127.0.0.1:5000/libros?autor_id=2
+
+### ------------------------------------------------------------------------------
+### 4. PROBAR CÓDIGO 200 OK: Buscar libros por texto (ej: "principito")
+GET http://127.0.0.1:5000/libros?busqueda=principito
+
+### ------------------------------------------------------------------------------
+### 5. PROBAR CÓDIGO 201 CREATED: Crear un autor nuevo
+POST http://127.0.0.1:5000/autores
+Content-Type: application/json
+
+{
+  "nombre": "Isabel Allende",
+  "nacionalidad": "Chilena"
+}
+
+### ------------------------------------------------------------------------------
+### 6. PROBAR CÓDIGO 201 CREATED: Crear un libro nuevo vinculado al autor_id 1
+POST http://127.0.0.1:5000/libros
+Content-Type: application/json
+
+{
+  "titulo": "Crónica de una muerte anunciada",
+  "genero": "Novela",
+  "anio_publicacion": 1981,
+  "disponible": true,
+  "autor_id": 1
+}
+
+### ------------------------------------------------------------------------------
+### 7. PROBAR CÓDIGO 400 BAD REQUEST: Intentar crear autor con campos vacíos
+POST http://127.0.0.1:5000/autores
+Content-Type: application/json
+
+{
+  "nombre": ""
+}
+
+### ------------------------------------------------------------------------------
+### 8. PROBAR CÓDIGO 400 BAD REQUEST: Tipo de dato inválido (año con texto)
+POST http://127.0.0.1:5000/libros
+Content-Type: application/json
+
+{
+  "titulo": "Libro Inválido",
+  "genero": "Ficción",
+  "anio_publicacion": "dos-mil-veinte",
+  "autor_id": 1
+}
+
+### ------------------------------------------------------------------------------
+### 9. PROBAR CÓDIGO 400 BAD REQUEST: El autor_id foráneo no existe
+POST http://127.0.0.1:5000/libros
+Content-Type: application/json
+
+{
+  "titulo": "Libro Huérfano",
+  "genero": "Ficción",
+  "anio_publicacion": 2022,
+  "autor_id": 9999
+}
+
+### ------------------------------------------------------------------------------
+### 10. PROBAR CÓDIGO 400 BAD REQUEST: Regla de borrado seguro
+### (Intenta borrar a Gabriel García Márquez que tiene libros asociados)
+DELETE http://127.0.0.1:5000/autores/1
+
+### ------------------------------------------------------------------------------
+### 11. PROBAR CÓDIGO 404 NOT FOUND: Buscar un autor que no existe
+GET http://127.0.0.1:5000/autores/9999
+

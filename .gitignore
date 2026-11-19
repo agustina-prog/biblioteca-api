@@ -1,12 +1,40 @@
-# Entorno virtual de Python
+# ==============================================================================
+# .gitignore RAÍZ del proyecto biblioteca-api
+# (Aplica tanto al backend como al futuro frontend de Angular)
+# ==============================================================================
+
+# ----- PYTHON / BACKEND -----
+# El entorno virtual NUNCA debe subirse: es pesado y cada máquina genera el suyo
 venv/
 env/
 .venv/
 
-# Archivos de base de datos
+# Variables de entorno con claves secretas: NUNCA subir
+.env
+
+# Archivos de base de datos locales: cada desarrollador genera el suyo
 *.db
 *.sqlite3
 
-# Caché compilada de Python
+# Caché compilada de Python (se regenera automáticamente)
 __pycache__/
 *.py[cod]
+*$py.class
+
+# ----- ANGULAR / FRONTEND -----
+# Dependencias de Node.js: pesadas, se reinstalan con "npm install"
+node_modules/
+
+# Archivos de caché de compilación de Angular
+.angular/
+
+# Resultado de la compilación (se regenera con "ng build")
+dist/
+
+# ----- EDITORES -----
+.vscode/
+.idea/
+*.suo
+*.ntvs*
+*.njsproj
+*.sln
