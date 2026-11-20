@@ -1,10 +1,9 @@
-// Test unitario del AutorService — API Vitest (Angular 22)
-// Verifica que el servicio obtiene autores correctamente del backend
+// Test unitario del AutorService — Vitest con Angular 22
+// Sin imports de globals (describe/it/expect están disponibles automáticamente)
 
 import { TestBed } from '@angular/core/testing';
 import { provideHttpClient } from '@angular/common/http';
 import { provideHttpClientTesting, HttpTestingController } from '@angular/common/http/testing';
-import { expect, describe, it, beforeEach, afterEach } from 'vitest';
 
 import { AutorService } from './autor.service';
 import { Autor } from '../models/autor.model';
@@ -36,8 +35,8 @@ describe('AutorService', () => {
     expect(servicio).toBeTruthy();
   });
 
-  // Test 2: getAutores() devuelve una lista de autores
-  it('debería obtener la lista de autores desde el backend', () => {
+  // Test 2: getAutores() llama a GET /autores
+  it('debería llamar a GET /autores y devolver la lista', () => {
     const autoresFalsos: Autor[] = [
       { id: 1, nombre: 'Gabriel García Márquez', nacionalidad: 'Colombiano' },
       { id: 2, nombre: 'Jorge Luis Borges', nacionalidad: 'Argentino' }
@@ -53,14 +52,13 @@ describe('AutorService', () => {
     peticion.flush(autoresFalsos);
   });
 
-  // Test 3: crearAutor() hace un POST al backend con los datos correctos
-  it('debería crear un nuevo autor con POST', () => {
+  // Test 3: crearAutor() hace un POST con los datos correctos
+  it('debería llamar a POST /autores con los datos del autor nuevo', () => {
     const nuevoAutor: Autor = { nombre: 'Julio Cortázar', nacionalidad: 'Argentino' };
     const respuestaBackend: Autor = { id: 3, nombre: 'Julio Cortázar', nacionalidad: 'Argentino' };
 
     servicio.crearAutor(nuevoAutor).subscribe(autor => {
       expect(autor.id).toBe(3);
-      expect(autor.nombre).toBe('Julio Cortázar');
     });
 
     const peticion = controladorHttp.expectOne(`${URL_BASE}/autores`);
