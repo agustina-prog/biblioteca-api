@@ -1,83 +1,145 @@
-/* Navbar principal */
+/* ==============================================================================
+   NAVBAR & ESTRUCTURA GENERAL (app.css)
+   ============================================================================== */
+
 .navbar {
-  background-color: #1e293b;
-  color: white;
-  box-shadow: 0 2px 8px rgba(0, 0, 0, 0.1);
+  background-color: var(--color-primary);
+  color: #ffffff;
+  box-shadow: 0 4px 18px rgba(18, 40, 36, 0.12);
   position: sticky;
   top: 0;
   z-index: 50;
+  border-bottom: 1px solid rgba(255, 255, 255, 0.08);
 }
 
 .nav-container {
-  max-width: 1200px;
+  max-width: 1180px;
   margin: 0 auto;
-  padding: 0.85rem 1rem;
+  padding: 0.85rem 1.25rem;
   display: flex;
   justify-content: space-between;
   align-items: center;
-  flex-wrap: wrap;
   gap: 1rem;
 }
 
+/* Marca de la Biblioteca */
 .brand {
   display: flex;
   align-items: center;
-  gap: 0.6rem;
+  gap: 0.65rem;
   text-decoration: none;
-  color: white;
-  font-size: 1.25rem;
-  font-weight: 700;
+  color: #ffffff;
+  transition: opacity 0.2s;
+}
+
+.brand:hover {
+  opacity: 0.92;
 }
 
 .brand-icon {
   font-size: 1.5rem;
+  line-height: 1;
+  filter: drop-shadow(0 2px 4px rgba(0, 0, 0, 0.2));
 }
 
+.brand-text {
+  font-family: var(--font-title);
+  font-size: 1.3rem;
+  font-weight: 600;
+  letter-spacing: -0.02em;
+  color: #ffffff;
+}
+
+/* Enlaces de Navegación */
 .nav-links {
   display: flex;
   align-items: center;
-  gap: 1rem;
-  flex-wrap: wrap;
+  gap: 0.5rem;
 }
 
 .nav-links a {
-  color: #cbd5e1;
+  color: #D3E0DC;
   text-decoration: none;
+  font-size: 0.925rem;
   font-weight: 500;
-  padding: 0.4rem 0.8rem;
-  border-radius: 6px;
+  padding: 0.5rem 0.9rem;
+  border-radius: var(--radius-sm);
   transition: all 0.2s ease;
+  display: inline-flex;
+  align-items: center;
 }
 
 .nav-links a:hover {
-  color: white;
-  background-color: rgba(255, 255, 255, 0.08);
+  color: #ffffff;
+  background-color: rgba(255, 255, 255, 0.09);
 }
 
-.nav-links a.active {
-  color: white;
-  background-color: #2563eb;
+.nav-links a.active:not(.nav-btn-highlight) {
+  color: #ffffff;
+  background-color: rgba(255, 255, 255, 0.16);
+  font-weight: 600;
 }
 
+/* Botón Destacado: "+ Agregar Libro" con terracota cálido */
 .nav-btn-highlight {
-  background-color: #16a34a !important;
-  color: white !important;
+  background-color: var(--color-accent) !important;
+  color: #ffffff !important;
   font-weight: 600 !important;
+  box-shadow: 0 2px 8px rgba(200, 109, 81, 0.35);
+  margin-left: 0.25rem;
 }
 
 .nav-btn-highlight:hover {
-  background-color: #15803d !important;
+  background-color: var(--color-accent-hover) !important;
+  transform: translateY(-1px);
 }
 
 .main-content {
   flex: 1;
 }
 
+/* Footer sobrio y elegante */
 .footer {
-  background-color: #0f172a;
-  color: #94a3b8;
-  padding: 1.5rem 0;
-  margin-top: 3rem;
+  background-color: #122824;
+  color: #9CB2AD;
+  padding: 1.75rem 0;
+  margin-top: 3.5rem;
   text-align: center;
-  font-size: 0.9rem;
+  font-size: 0.88rem;
+  border-top: 1px solid rgba(255, 255, 255, 0.06);
+}
+
+.footer strong {
+  color: #E2ECE9;
+  font-family: var(--font-title);
+  font-weight: 600;
+}
+
+/* Mobile-first: navegación responsive */
+@media (max-width: 680px) {
+  .nav-container {
+    flex-direction: column;
+    align-items: stretch;
+    padding: 0.75rem 1rem;
+    gap: 0.75rem;
+  }
+
+  .brand {
+    justify-content: center;
+  }
+
+  .nav-links {
+    justify-content: center;
+    flex-wrap: wrap;
+    gap: 0.35rem;
+  }
+
+  .nav-links a {
+    padding: 0.45rem 0.75rem;
+    font-size: 0.85rem;
+  }
+
+  .nav-btn-highlight {
+    margin-left: 0;
+  }
 }
